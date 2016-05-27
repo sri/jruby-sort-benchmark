@@ -1,0 +1,91 @@
+#! /usr/bin/env ruby
+
+USE_ARRAYS_SORT_PATCH = <<-EOP
+diff --git a/core/src/main/java/org/jruby/RubyArray.java b/core/src/main/java/org/jruby/RubyArray.java
+index df22af7..4c26d39 100644
+--- a/core/src/main/java/org/jruby/RubyArray.java
++++ b/core/src/main/java/org/jruby/RubyArray.java
+@@ -57,7 +57,6 @@ import org.jruby.runtime.marshal.MarshalStream;
+ import org.jruby.runtime.marshal.UnmarshalStream;
+ import org.jruby.util.ByteList;
+ import org.jruby.util.Pack;
+-import org.jruby.util.Qsort;
+ import org.jruby.util.RecursiveComparator;
+ import org.jruby.util.TypeConverter;
+ import org.jruby.util.io.EncodingUtils;
+@@ -3275,7 +3274,7 @@ public class RubyArray extends RubyObject implements List, RandomAccess {
+         final boolean stringBypass = !honorOverride || runtime.getString().isMethodBuiltin("<=>");
+
+         try {
+-            Qsort.sort(values, begin, begin + realLength, new Comparator() {
++            Arrays.sort(values, begin, begin + realLength, new Comparator() {
+                 public int compare(Object o1, Object o2) {
+                     if (fixnumBypass && o1 instanceof RubyFixnum && o2 instanceof RubyFixnum) {
+                         return compareFixnums((RubyFixnum) o1, (RubyFixnum) o2);
+@@ -3310,7 +3309,7 @@ public class RubyArray extends RubyObject implements List, RandomAccess {
+         int length = realLength;
+
+         safeArrayCopy(values, begin, newValues, 0, length);
+-        Qsort.sort(newValues, 0, length, new Comparator() {
++        Arrays.sort(newValues, 0, length, new Comparator() {
+             public int compare(Object o1, Object o2) {
+                 IRubyObject obj1 = (IRubyObject) o1;
+                 IRubyObject obj2 = (IRubyObject) o2;
+EOP
+
+def run(cmd)
+  system cmd
+  abort "\"#{cmd}\" exited with status #{$?}" if $?.exitstatus != 0
+end
+
+def main
+  unless File.exists?("jruby")
+    run "git clone https://github.com/jruby/jruby.git"
+  end
+
+  Dir.chdir "jruby"
+
+  run "git stash -u"
+
+  # Ensure maven is in path
+  run("mvn --version")
+
+  run "mvn -pl core"
+  run "bin/jruby ../sort_benchmark.rb > ../Qsort.txt"
+
+  open("t.patch", "w") { |f| f.write USE_ARRAYS_SORT_PATCH }
+
+  run "git apply t.patch"
+  run "mvn -pl core"
+  run "bin/jruby ../sort_benchmark.rb > ../Arrays.sort.txt"
+
+  Dir.chdir ".."
+
+  puts "JRuby's QSort"
+  run "cat Qsort.txt"
+  puts "==" * 88
+  puts "Java's native Arrays.sort"
+  run "cat Arrays.sort.txt"
+
+  open("README.md", "w") do |f|
+
+    f.write "## JRuby builtin Qsort vs Arrays.sort (Tim Sort)\n"
+
+    f.write "#### Qsort\n\n"
+
+    f.write "```\n"
+    f.write File.read("Qsort.txt")
+    f.write "\n```\n"
+
+    f.write "#### Arrays.sort\n\n"
+
+    f.write "```\n"
+    f.write File.read("Arrays.sort.txt")
+    f.write "\n```\n"
+
+  end
+end
+
+if $0 == __FILE__
+  main
+end
