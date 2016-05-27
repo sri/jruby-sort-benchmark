@@ -21,6 +21,9 @@ random_ints   = (1..MAX).to_a.shuffle
 random_floats = (1..MAX).to_a.map { |x| x.to_f }.shuffle
 random_objs   = (1..MAX).to_a.map { |x| Test.new(x) }.shuffle
 
+
+puts "java.runtime.version: #{ENV_JAVA['java.runtime.version']}"
+puts "java.vm.version: #{ENV_JAVA['java.vm.version']}"
 puts "Iterations: #{MAX}"
 puts defined?(JRUBY_VERSION) ? "JRUBY_VERSION: #{JRUBY_VERSION}" : "MRI Ruby"
 puts "RUBY_VERSION: #{RUBY_VERSION}"

@@ -68,21 +68,17 @@ def main
   run "cat Arrays.sort.txt"
 
   open("README.md", "w") do |f|
-
     f.write "## JRuby builtin Qsort vs Arrays.sort (Tim Sort)\n"
 
     f.write "#### Qsort\n\n"
-
     f.write "```\n"
     f.write File.read("Qsort.txt")
     f.write "\n```\n"
 
     f.write "#### Arrays.sort\n\n"
-
     f.write "```\n"
     f.write File.read("Arrays.sort.txt")
     f.write "\n```\n"
-
   end
 end
 
