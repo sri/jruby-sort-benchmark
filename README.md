@@ -2,8 +2,13 @@
 #### Qsort
 
 As of Jun 15, 2016, this has been merged into JRuby master:
+
+See:
+
 https://github.com/jruby/jruby/pull/3961
+
 https://github.com/jruby/jruby/issues/3919
+
 
 ```
 java.runtime.version: 1.8.0_72-internal-b05
